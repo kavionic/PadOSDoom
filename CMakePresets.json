@@ -1,0 +1,42 @@
+{
+    "version": 5,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 25,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "stm32h7-base",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/Build/${presetName}"
+        },
+        {
+            "name": "STM32H7-Debug",
+            "inherits": "stm32h7-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_C_FLAGS_DEBUG": "-O2 -g3",
+                "CMAKE_CXX_FLAGS_DEBUG": "-O2 -g3"
+            }
+        },
+        {
+            "name": "STM32H7-Release",
+            "inherits": "stm32h7-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "STM32H7-Debug",
+            "configurePreset": "STM32H7-Debug"
+        },
+        {
+            "name": "STM32H7-Release",
+            "configurePreset": "STM32H7-Release"
+        }
+    ]
+}
