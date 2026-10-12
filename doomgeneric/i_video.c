@@ -225,9 +225,13 @@ void I_InitGraphics (void)
 		mode = myargv[gfxmodeparm + 1];
 	}
 	else {
+#ifdef DOOMGENERIC_RGB565
+        mode = "rgb565";
+#else
 		// default to rgba8888 like the old behavior, for compatibility
 		// maybe could warn here?
 		mode = "rgba8888";
+#endif
 	}
 
 	if (strcmp(mode, "rgba8888") == 0) {
@@ -264,6 +268,12 @@ void I_InitGraphics (void)
 
 #endif  // CMAP256
 
+#ifdef DOOMGENERIC_RGB565
+    if (s_Fb.bits_per_pixel != 16) {
+        I_Error("This build requires -gfxmode rgb565.");
+    }
+#endif
+
     printf("I_InitGraphics: framebuffer: x_res: %d, y_res: %d, x_virtual: %d, y_virtual: %d, bpp: %d\n",
             s_Fb.xres, s_Fb.yres, s_Fb.xres_virtual, s_Fb.yres_virtual, s_Fb.bits_per_pixel);
 
@@ -285,6 +295,12 @@ void I_InitGraphics (void)
         printf("I_InitGraphics: Auto-scaling factor: %d\n", fb_scaling);
     }
 
+
+#ifdef PADOS_DOOM
+    if (fb_scaling != 1) {
+        I_Error("The PadOS framebuffer requires -scaling 1.");
+    }
+#endif
 
     /* Allocate screen to draw to */
 	I_VideoBuffer = (byte*)Z_Malloc (SCREENWIDTH * SCREENHEIGHT, PU_STATIC, NULL);  // For DOOM to draw on

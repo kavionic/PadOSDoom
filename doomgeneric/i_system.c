@@ -261,10 +261,12 @@ void I_Quit (void)
     SDL_Quit();
 
     exit(0);
+#elif defined(PADOS_DOOM)
+    exit(0);
 #endif
 }
 
-#if !defined(_WIN32) && !defined(__MACOSX__) && !defined(__DJGPP__)
+#if !defined(_WIN32) && !defined(__MACOSX__) && !defined(__DJGPP__) && !defined(PADOS_DOOM)
 #define ZENITY_BINARY "/usr/bin/zenity"
 
 // returns non-zero if zenity is available
@@ -366,7 +368,7 @@ void I_Error (char *error, ...)
     if (already_quitting)
     {
         fprintf(stderr, "Warning: recursive call to I_Error detected.\n");
-#if ORIGCODE
+#if ORIGCODE || defined(PADOS_DOOM)
         exit(-1);
 #endif
     }
@@ -448,7 +450,7 @@ void I_Error (char *error, ...)
                                         message,
                                         NULL);
     }
-#elif defined(__DJGPP__)
+#elif defined(__DJGPP__) || defined(PADOS_DOOM)
     {
         printf("%s\n", msgbuf);
         exit(-1);

@@ -14,7 +14,17 @@ project(PadOSDoom VERSION 0.1 LANGUAGES C CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_library(PadOS_Doom STATIC
+set(PADOS_INSTALL_DIR "${PADOS_ROOT_DIR}/../Install" CACHE PATH "Installed PadOS dependencies and package configuration")
+
+if(NOT TARGET PadOS::PadOS_Config)
+    find_package(PadOS CONFIG REQUIRED PATHS "${PADOS_INSTALL_DIR}/lib/cmake/PadOS")
+endif()
+
+if(NOT TARGET PadOS::PadOS_Config)
+    message(FATAL_ERROR "A current PadOS::PadOS_Config target is required. Use the firmware build or update the PadOS installation.")
+endif()
+
+set(PADOS_DOOM_ENGINE_SOURCES
     doomgeneric/dummy.c
     doomgeneric/am_map.c
     doomgeneric/doomdef.c
@@ -97,28 +107,71 @@ add_library(PadOS_Doom STATIC
     doomgeneric/doomgeneric.c
 )
 
+add_library(PadOS_DoomCore OBJECT ${PADOS_DOOM_ENGINE_SOURCES})
+target_compile_options(PadOS_DoomCore PRIVATE -fdata-sections -fno-common -fno-lto)
+
+set(PADOS_DOOM_STATE_DIR "${CMAKE_CURRENT_BINARY_DIR}/DoomEngineState/$<CONFIG>")
+set(PADOS_DOOM_STATE_OBJECTS "")
+foreach(engine_source IN LISTS PADOS_DOOM_ENGINE_SOURCES)
+    get_filename_component(engine_name "${engine_source}" NAME)
+    list(APPEND PADOS_DOOM_STATE_OBJECTS "${PADOS_DOOM_STATE_DIR}/${engine_name}.o")
+endforeach()
+
+file(GENERATE
+    OUTPUT "${PADOS_DOOM_STATE_DIR}/Objects.cmake"
+    CONTENT "set(DOOM_OBJECT_FILES [==[$<JOIN:$<TARGET_OBJECTS:PadOS_DoomCore>,;>]==])\n"
+)
+add_custom_command(
+    OUTPUT "${PADOS_DOOM_STATE_DIR}/DoomEngineState.cpp" ${PADOS_DOOM_STATE_OBJECTS}
+    COMMAND "${CMAKE_COMMAND}"
+        "-DOBJECT_LIST=${PADOS_DOOM_STATE_DIR}/Objects.cmake"
+        "-DOBJCOPY=${CMAKE_OBJCOPY}"
+        "-DOBJDUMP=${CMAKE_OBJDUMP}"
+        "-DOUTPUT_DIR=${PADOS_DOOM_STATE_DIR}"
+        -P "${CMAKE_CURRENT_SOURCE_DIR}/CMake/GenerateDoomState.cmake"
+    DEPENDS
+        $<TARGET_OBJECTS:PadOS_DoomCore>
+        "${CMAKE_CURRENT_SOURCE_DIR}/CMake/GenerateDoomState.cmake"
+    VERBATIM
+)
+set_source_files_properties(${PADOS_DOOM_STATE_OBJECTS} PROPERTIES EXTERNAL_OBJECT TRUE GENERATED TRUE)
+
+add_library(PadOS_Doom STATIC
+    Source/DoomApplication.cpp
+    Source/DoomSession.cpp
+    "${PADOS_DOOM_STATE_DIR}/DoomEngineState.cpp"
+    ${PADOS_DOOM_STATE_OBJECTS}
+)
+add_dependencies(PadOS_Doom PadOS_DoomCore)
 add_library(PadOSDoom::PadOS_Doom ALIAS PadOS_Doom)
 
-set_target_properties(PadOS_Doom PROPERTIES
-    C_STANDARD 99
-    C_STANDARD_REQUIRED ON
-    CXX_STANDARD 23
-    CXX_STANDARD_REQUIRED ON
-    UNITY_BUILD OFF
-)
+foreach(doom_target PadOS_DoomCore PadOS_Doom)
+    set_target_properties(${doom_target} PROPERTIES
+        C_STANDARD 99
+        C_STANDARD_REQUIRED ON
+        CXX_STANDARD 23
+        CXX_STANDARD_REQUIRED ON
+        UNITY_BUILD OFF
+        INTERPROCEDURAL_OPTIMIZATION OFF
+    )
 
-target_include_directories(PadOS_Doom PRIVATE
-    doomgeneric
-    "${PADOS_ROOT_DIR}/Include"
-)
+    target_include_directories(${doom_target} PRIVATE
+        Source
+        doomgeneric
+        "${PADOS_ROOT_DIR}/Include"
+        "${PADOS_INSTALL_DIR}/include"
+        "${PADOS_INSTALL_DIR}/include/cmsis-core"
+        "${PADOS_INSTALL_DIR}/include/cmsis-device-h7"
+    )
 
-target_compile_definitions(PadOS_Doom PRIVATE
-    DOOMGENERIC_RESX=320
-    DOOMGENERIC_RESY=200
-)
+    target_compile_definitions(${doom_target} PRIVATE
+        PADOS_DOOM
+        DOOMGENERIC_RGB565
+        DOOMGENERIC_RESX=320
+        DOOMGENERIC_RESY=200
+    )
 
-if(TARGET PadOS::PadOS_Config)
-    target_link_libraries(PadOS_Doom PRIVATE PadOS::PadOS_Config)
-endif()
+    target_link_libraries(${doom_target} PRIVATE PadOS::PadOS_Config)
+endforeach()
 
 target_link_libraries(PadOS_Doom PRIVATE m)
