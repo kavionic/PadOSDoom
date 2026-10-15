@@ -118,7 +118,7 @@ static int player_class;
 
 static int GetAdjustedTime(void)
 {
-    int time_ms;
+    time_t time_ms;
 
     time_ms = I_GetTimeMS();
 

@@ -145,6 +145,8 @@ add_library(PadOS_Doom STATIC
 add_dependencies(PadOS_Doom PadOS_DoomCore)
 add_library(PadOSDoom::PadOS_Doom ALIAS PadOS_Doom)
 
+target_compile_options(PadOS_Doom PRIVATE -Wno-psabi)
+
 foreach(doom_target PadOS_DoomCore PadOS_Doom)
     set_target_properties(${doom_target} PROPERTIES
         C_STANDARD 99

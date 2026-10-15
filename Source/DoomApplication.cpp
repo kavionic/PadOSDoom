@@ -84,7 +84,7 @@ public:
     void InitializeDisplay();
     void Present();
     void WaitForEvents(uint32_t milliseconds);
-    uint32_t GetTicks() const;
+    time_t GetTicks() const;
     int GetKey(int* pressed, unsigned char* key);
 
 private:
@@ -316,9 +316,9 @@ void DoomApplication::WaitForEvents(uint32_t milliseconds)
     } while (m_WakeupTimer.IsRunning());
 }
 
-uint32_t DoomApplication::GetTicks() const
+time_t DoomApplication::GetTicks() const
 {
-    return static_cast<uint32_t>((get_monotonic_time() - m_StartTime).AsMilliseconds());
+    return static_cast<time_t>((get_monotonic_time() - m_StartTime).AsMilliseconds());
 }
 
 int DoomApplication::GetKey(int* pressed, unsigned char* key)
@@ -413,7 +413,7 @@ void DG_SleepMs(uint32_t milliseconds)
     PadOSDoom::DoomApplication::GetCurrent()->WaitForEvents(milliseconds);
 }
 
-uint32_t DG_GetTicksMs()
+time_t DG_GetTicksMs()
 {
     return PadOSDoom::DoomApplication::GetCurrent()->GetTicks();
 }

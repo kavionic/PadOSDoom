@@ -175,7 +175,7 @@ void DG_SleepMs(uint32_t ms)
   SDL_Delay(ms);
 }
 
-uint32_t DG_GetTicksMs()
+time_t DG_GetTicksMs()
 {
   return SDL_GetTicks();
 }

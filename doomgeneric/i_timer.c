@@ -32,17 +32,17 @@
 // returns time in 1/35th second tics
 //
 
-static uint32_t basetime = 0;
+static time_t basetime = 0;
 
 
-int I_GetTicks(void)
+time_t I_GetTicks(void)
 {
 	return DG_GetTicksMs();
 }
 
 int  I_GetTime (void)
 {
-    uint32_t ticks;
+    time_t ticks;
 
     ticks = I_GetTicks();
 
@@ -59,9 +59,9 @@ int  I_GetTime (void)
 // Same as I_GetTime, but returns time in milliseconds
 //
 
-int I_GetTimeMS(void)
+time_t I_GetTimeMS(void)
 {
-    uint32_t ticks;
+    time_t ticks;
 
     ticks = I_GetTicks();
 

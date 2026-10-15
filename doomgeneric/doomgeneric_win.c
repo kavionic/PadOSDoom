@@ -162,7 +162,7 @@ void DG_SleepMs(uint32_t ms)
 	Sleep(ms);
 }
 
-uint32_t DG_GetTicksMs()
+time_t DG_GetTicksMs()
 {
 	return GetTickCount();
 }

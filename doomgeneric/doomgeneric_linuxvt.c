@@ -524,7 +524,7 @@ void DG_SleepMs(uint32_t ms) {
 	usleep(ms * 1000);
 }
 
-uint32_t DG_GetTicksMs() {
+time_t DG_GetTicksMs() {
 	struct timeval curTime;
 	long seconds, usec;
 

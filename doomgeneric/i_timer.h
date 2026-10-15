@@ -20,6 +20,8 @@
 #ifndef __I_TIMER__
 #define __I_TIMER__
 
+#include <time.h>
+
 #define TICRATE 35
 
 // Called by D_DoomLoop,
@@ -27,7 +29,7 @@
 int I_GetTime (void);
 
 // returns current time in ms
-int I_GetTimeMS (void);
+time_t I_GetTimeMS (void);
 
 // Pause for a specified number of ms
 void I_Sleep(int ms);
